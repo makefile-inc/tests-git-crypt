@@ -1,0 +1,1 @@
+include $(CURDIR)/makefile-git-crypt/include.mk.full.inc
