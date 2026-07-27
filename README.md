@@ -183,3 +183,52 @@ git commit -m "remove NOT_EXISTS_DIR_ADDED_AFTER/ dir secret"
 git push
 # check that ./NOT_EXISTS_DIR_ADDED_AFTER/ dir fully removed 
 ```
+
+### Init in new repo
+
+```bash
+# If need cd to ~/src/tests
+out_repo_dir="test-init-git-crypt-$RANDOM"
+key_init_file="../repo-init-key-$RANDOM"
+mkdir "$out_repo_dir"
+cd "$out_repo_dir"
+git init
+echo "README.md" > README.md
+git add README.md 
+git commit -m "init"
+git branch -m main
+git submodule add git@github.com:makefile-inc/git-crypt.git makefile-git-crypt
+pushd .
+cd makefile-git-crypt
+git fetch -a && git checkout NEW_TAG
+git submodule update --recursive --init 
+popd
+echo 'include $(CURDIR)/makefile-git-crypt/include.mk.full.inc' > Makefile
+cp makefile-git-crypt/.gitignore .gitignore
+
+make git-crypt/repo/symmetric/init KEY_PATH="$key_init_file"
+# Should fail because have uncommited changes
+
+git add .gitignore Makefile makefile-git-crypt
+git commit -m "init submodule"
+
+make git-crypt/repo/symmetric/init KEY_PATH="$key_init_file"
+# Should ok
+
+make git-crypt/add/file FILE=test.key
+echo "key" > test.key
+git add test.key
+git commit -m "add key"
+
+make git-crypt/repo/lock
+# Should ok
+
+cat test.key
+# Should binary and nor readable
+
+make git-crypt/repo/symmetric/unlock KEY_PATH="$key_init_file"
+# Should ok
+
+cat test.key
+# Should out: key
+```
