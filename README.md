@@ -12,7 +12,7 @@ Tests for https://github.com/makefile-inc/git-crypt
 out_repo_dir="test-git-crypt-$RANDOM"
 git clone --recurse-submodules git@github.com:makefile-inc/test-git-crypt.git "$out_repo_dir"
 cd "$out_repo_dir"
-git checkout -b "test-SOME_PREFIX" && cd makefile-git-crypt/ &&git fetch -a && git checkout NEW_VERSION
+git checkout -b "test-SOME_PREFIX" && cd makefile-git-crypt/ && git fetch -a && git checkout NEW_VERSION
 cd ../
 git add makefile-git-crypt/ && git commit -m "Upgrade to NEW_VERSION" && git push -u origin "test-SOME_PREFIX"
 ```
@@ -155,15 +155,26 @@ rm -rfv NOT_EXISTS_DIR_ADDED_AFTER/ && git add NOT_EXISTS_DIR_ADDED_AFTER/ && gi
 # check that ./NOT_EXISTS_DIR_ADDED_AFTER/ dir fully removed 
 ```
 
+### Skip re-add
+
+```bash
+echo "Skip re-add" > key.skip && git add key.skip && git commit -m "Add file to skip re-add"
+make git-crypt/add/file FILE=*.skip SKIP_RE_ADD=true && git push
+# check ok and that key.skip is not encrypted
+
+make git-crypt/remove TO_REMOVE=*.skip SKIP_RE_ADD=true && git push
+# check ok
+
+rm -f key.skip && git add key.skip && git commit -m "Remove key.skip" && git push
+```
+
 ### Init in new repo
 
 ```bash
 # If need cd to ~/src/tests
 out_repo_dir="test-init-git-crypt-$RANDOM"
 key_init_file="../repo-init-key-$RANDOM"
-mkdir "$out_repo_dir"
-cd "$out_repo_dir"
-git init && echo "README.md" > README.md && git add README.md && git commit -m "init" && git branch -m main
+mkdir "$out_repo_dir" && cd "$out_repo_dir" && git init && echo "README.md" > README.md && git add README.md && git commit -m "init" && git branch -m main
 git submodule add git@github.com:makefile-inc/git-crypt.git makefile-git-crypt
 pushd .
 cd makefile-git-crypt
