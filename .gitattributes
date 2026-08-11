@@ -1,2 +1,1 @@
-*.settings.tf filter=git-crypt diff=git-crypt
 subdir/deep/key.txt filter=git-crypt diff=git-crypt
