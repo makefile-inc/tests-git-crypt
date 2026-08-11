@@ -10,11 +10,14 @@ Tests for https://github.com/makefile-inc/git-crypt
 
 ```bash
 out_repo_dir="test-git-crypt-$RANDOM"
-git clone --recurse-submodules git@github.com:makefile-inc/test-git-crypt.git "$out_repo_dir"
+## change vars!
+branch_prefix="upgrade-to-0-"
+checkout_ref="upgrade-to-0-"
+git clone --recurse-submodules git@github.com:makefile-inc/tests-git-crypt.git "$out_repo_dir"
 cd "$out_repo_dir"
-git checkout -b "test-SOME_PREFIX" && cd makefile-git-crypt/ && git fetch -a && git checkout NEW_VERSION
+git checkout -b "test-$branch_prefix" && cd makefile-git-crypt/ && git fetch -a && git checkout "$checkout_ref" && git submodule update --recursive
 cd ../
-git add makefile-git-crypt/ && git commit -m "Upgrade to NEW_VERSION" && git push -u origin "test-SOME_PREFIX"
+git add makefile-git-crypt/ && git commit -m "Upgrade to $checkout_ref" && git push -u origin "test-${branch_prefix}"
 ```
 
 ## Cases
