@@ -13,11 +13,17 @@ out_repo_dir="test-git-crypt-$RANDOM"
 ## change vars!
 branch_prefix="upgrade-to-0-"
 checkout_ref="upgrade-to-0-"
-git clone --recurse-submodules git@github.com:makefile-inc/tests-git-crypt.git "$out_repo_dir"
-cd "$out_repo_dir"
-git checkout -b "test-$branch_prefix" && cd makefile-git-crypt/ && git fetch -a && git checkout "$checkout_ref" && git submodule update --recursive
-cd ../
-git add makefile-git-crypt/ && git commit -m "Upgrade to $checkout_ref" && git push -u origin "test-${branch_prefix}"
+git clone --recurse-submodules git@github.com:makefile-inc/tests-git-crypt.git "$out_repo_dir" && \
+  cd "$out_repo_dir" && \
+  git checkout -b "test-$branch_prefix" && \
+  cd makefile-git-crypt/ && \
+  git fetch -a && \
+  git checkout "$checkout_ref" && \
+  git submodule update --recursive && \
+  cd ../ && \
+  git add makefile-git-crypt/ && \
+  git commit -m "Upgrade to $checkout_ref" && \
+  git push -u origin "test-${branch_prefix}"
 ```
 
 ## Cases
@@ -132,12 +138,18 @@ make git-crypt/remove TO_REMOVE=NOT_EXISTS_FILE && git push
 
 ## File encrypted after add not exist file and cleanup
 make git-crypt/add/file FILE=NOT_EXISTS_FILE_ADDED_AFTER
-echo "secret" > NOT_EXISTS_FILE_ADDED_AFTER && git add NOT_EXISTS_FILE_ADDED_AFTER && git commit -m "add NOT_EXISTS_FILE_ADDED_AFTER secret" && git push
+echo "secret" > NOT_EXISTS_FILE_ADDED_AFTER && \
+  git add NOT_EXISTS_FILE_ADDED_AFTER && \
+  git commit -m "add NOT_EXISTS_FILE_ADDED_AFTER secret" && \
+  git push
 # check that is binary and not readable
 #   ./NOT_EXISTS_FILE_ADDED_AFTER
 
 make git-crypt/remove TO_REMOVE=NOT_EXISTS_FILE_ADDED_AFTER
-rm -f NOT_EXISTS_FILE_ADDED_AFTER && git add NOT_EXISTS_FILE_ADDED_AFTER && git commit -m "remove NOT_EXISTS_FILE_ADDED_AFTER secret" && git push
+rm -f NOT_EXISTS_FILE_ADDED_AFTER && \
+  git add NOT_EXISTS_FILE_ADDED_AFTER && \
+  git commit -m "remove NOT_EXISTS_FILE_ADDED_AFTER secret" && \
+  git push
 # check that ./NOT_EXISTS_FILE_ADDED_AFTER fully removed 
 
 ## Add not exist dir
@@ -149,19 +161,28 @@ make git-crypt/remove TO_REMOVE=NOT_EXISTS_DIR/ && git push
 
 ## Files encrypted after add not exist dir and cleanup
 make git-crypt/add/dir DIR=NOT_EXISTS_DIR_ADDED_AFTER/
-mkdir NOT_EXISTS_DIR_ADDED_AFTER/ && echo "in folder secret" > NOT_EXISTS_DIR_ADDED_AFTER/added.txt && git add NOT_EXISTS_DIR_ADDED_AFTER/ && git commit -m "add NOT_EXISTS_DIR_ADDED_AFTER/ dir secret" && git push
+mkdir NOT_EXISTS_DIR_ADDED_AFTER/ && \
+  echo "in folder secret" > NOT_EXISTS_DIR_ADDED_AFTER/added.txt && \
+  git add NOT_EXISTS_DIR_ADDED_AFTER/ && \
+  git commit -m "add NOT_EXISTS_DIR_ADDED_AFTER/ dir secret" && \
+  git push
 # check that is binary and not readable
 #   ./NOT_EXISTS_DIR_ADDED_AFTER/added.txt
 
 make git-crypt/remove TO_REMOVE=NOT_EXISTS_DIR_ADDED_AFTER/
-rm -rfv NOT_EXISTS_DIR_ADDED_AFTER/ && git add NOT_EXISTS_DIR_ADDED_AFTER/ && git commit -m "remove NOT_EXISTS_DIR_ADDED_AFTER/ dir secret" && git push
+rm -rfv NOT_EXISTS_DIR_ADDED_AFTER/ && \
+  git add NOT_EXISTS_DIR_ADDED_AFTER/ && \
+  git commit -m "remove NOT_EXISTS_DIR_ADDED_AFTER/ dir secret" && \
+  git push
 # check that ./NOT_EXISTS_DIR_ADDED_AFTER/ dir fully removed 
 ```
 
 ### Skip re-add
 
 ```bash
-echo "Skip re-add" > key.skip && git add key.skip && git commit -m "Add file to skip re-add"
+echo "Skip re-add" > key.skip && \
+  git add key.skip && \
+  git commit -m "Add file to skip re-add"
 make git-crypt/add/file FILE=*.skip SKIP_RE_ADD=true && git push
 # check ok and that key.skip is not encrypted
 
@@ -177,13 +198,20 @@ rm -f key.skip && git add key.skip && git commit -m "Remove key.skip" && git pus
 # If need cd to ~/src/tests
 out_repo_dir="test-init-git-crypt-$RANDOM"
 key_init_file="../repo-init-key-$RANDOM"
-mkdir "$out_repo_dir" && cd "$out_repo_dir" && git init && echo "README.md" > README.md && git add README.md && git commit -m "init" && git branch -m main
+mkdir "$out_repo_dir" && \
+  cd "$out_repo_dir" && \
+  git init && \
+  echo "README.md" > README.md && \
+  git add README.md && \
+  git commit -m "init" && \
+  git branch -m main
 git submodule add git@github.com:makefile-inc/git-crypt.git makefile-git-crypt
-pushd .
-cd makefile-git-crypt
-git fetch -a && git checkout NEW_TAG
-git submodule update --recursive --init 
-popd
+pushd . && \
+  cd makefile-git-crypt && \
+  git fetch -a && \
+  git checkout NEW_TAG && \
+  git submodule update --recursive --init && \
+  popd
 echo 'include $(CURDIR)/makefile-git-crypt/include.mk.full.inc' > Makefile
 cp makefile-git-crypt/.gitignore .gitignore
 
