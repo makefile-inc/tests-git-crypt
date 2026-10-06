@@ -16,11 +16,7 @@ checkout_ref="upgrade-to-0-"
 git clone --recurse-submodules git@github.com:makefile-inc/tests-git-crypt.git "$out_repo_dir" && \
   cd "$out_repo_dir" && \
   git checkout -b "test-$branch_prefix" && \
-  cd makefile-git-crypt/ && \
-  git fetch -a && \
-  git checkout "$checkout_ref" && \
-  git submodule update --recursive && \
-  cd ../ && \
+  make common/git/submodule/upgrade SUBMODULE_DIR="makefile-git-crypt" CHECKOUT_TO="$checkout_ref"
   git add makefile-git-crypt/ && \
   git commit -m "Upgrade to $checkout_ref" && \
   git push -u origin "test-${branch_prefix}"
@@ -47,6 +43,90 @@ make git-crypt/repo/symmetric/init KEY_PATH="../${out_repo_dir}.key"
 make git-crypt/repo/symmetric/unlock KEY_PATH=".key-test-git-crypt"
 # Should ok
 make git-crypt/repo/symmetric/unlock KEY_PATH=".key-test-git-crypt"
+```
+
+### Unlock after clone
+
+#### Clone repo for after clone
+```bash
+out_repo_dir="test-git-crypt-$RANDOM"
+## change vars!
+branch_prefix="upgrade-to-0-"
+checkout_ref="upgrade-to-0-"
+git clone --recurse-submodules git@github.com:makefile-inc/tests-git-crypt.git "$out_repo_dir" && \
+  cd "$out_repo_dir" && \
+  git checkout -b "test-$branch_prefix" && \
+  make common/git/submodule/upgrade SUBMODULE_DIR="makefile-git-crypt" CHECKOUT_TO="$checkout_ref"
+  git add makefile-git-crypt/ && \
+  git commit -m "Upgrade to $checkout_ref" && \
+  git push -u origin "test-${branch_prefix}"
+# Prepare key
+cp .key-test-git-crypt ../.key-test-git-crypt
+sudo chown root:root ../.key-test-git-crypt
+```
+
+#### Unlock without target
+
+```bash
+# Before unlock
+# check that is binary and not readable
+#   ./test-1.key
+#   ./keys-dir/file.tfa
+#   ./keys-dir/sub/sub-key
+#   ./first.settings.tf
+#   ./second.settings.tf
+#   ./dir/third.settings.tf
+#   ./subdir/deep/key.txt
+# When ask to remove key file - allow
+make git-crypt/repo/symmetric/unlock/after-clone KEY_PATH=../.key-test-git-crypt
+# should unlock
+# check that is not binary and readable
+#   ./test-1.key
+#   ./keys-dir/file.tfa
+#   ./keys-dir/sub/sub-key
+#   ./first.settings.tf
+#   ./second.settings.tf
+#   ./dir/third.settings.tf
+#   ./subdir/deep/key.txt
+
+# check that key file removed
+ls -lh ../.key-test-git-crypt
+# Should not found
+```
+
+#### Unlock with target
+
+[Clone repo](#clone-repo-for-after-clone)
+
+```bash
+# Before unlock
+# check that is binary and not readable
+#   ./test-1.key
+#   ./keys-dir/file.tfa
+#   ./keys-dir/sub/sub-key
+#   ./first.settings.tf
+#   ./second.settings.tf
+#   ./dir/third.settings.tf
+#   ./subdir/deep/key.txt
+# When ask to remove key file - disallow
+make git-crypt/repo/symmetric/unlock/after-clone KEY_PATH=../.key-test-git-crypt TARGET_TO_INSTALL_DEPS=_test/deps/install
+# should unlock
+# check that is not binary and readable
+#   ./test-1.key
+#   ./keys-dir/file.tfa
+#   ./keys-dir/sub/sub-key
+#   ./first.settings.tf
+#   ./second.settings.tf
+#   ./dir/third.settings.tf
+#   ./subdir/deep/key.txt
+# check that output has:
+#  Some install
+#  Some post install
+
+# check that key file removed
+ls -lh ../.key-test-git-crypt
+# Should found
+rm -f ../.key-test-git-crypt
 ```
 
 ### Remove
